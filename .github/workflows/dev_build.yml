@@ -1,5 +1,8 @@
 name: Publish Development Build
-on: push
+on:
+    push:
+    workflow_dispatch:
+
 
 jobs:
   build:
@@ -25,12 +28,16 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
+      - name: Grab Release Tag
+        run: |
+            echo "tag=$(echo v${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+
       - name: Release
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: '${{ secrets.GITHUB_TOKEN }}'
-          automatic_release_tag: snapshot
+          automatic_release_tag: '{{ env.tag }}'
           prerelease: true
-          title: Dev Build
+          title: 'Dev Build for ${{ env.tag }}'
           files: |
             ./build/libs/*.jar
