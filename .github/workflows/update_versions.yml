@@ -1,0 +1,69 @@
+name: update_versions.yml
+
+on:
+    workflow_dispatch: # Allows manual triggering
+
+jobs:
+    rebase-branches:
+        runs-on: ubuntu-latest
+        steps:
+            - name: fetch branches
+              uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0
+
+            - name: get default branch
+              run: echo "default_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')" >> $GITHUB_ENV
+
+            - name: get all branches
+              run: |
+                  branches=$(git branch -r | grep -v HEAD | sed 's@origin/@@')
+                  echo "branches=$branches" >> $GITHUB_ENV
+
+            - name: rebase each branch
+              run: |
+                  default_branch=$GITHUB_ENV
+                  branches=$GITHUB_ENV
+                  conflict_branches=""
+
+                  for branch in $branches; do
+                    echo "Rebasing $branch onto $default_branch"
+                    git checkout $branch
+                    git rebase $default_branch || true
+
+                    # only rebase if there are no merge conflicts in src/main/java
+                    if [ -d ".git/rebase-merge" ]; then
+                      conflict=false
+                      for file in $(git diff --name-only --diff-filter=U); do
+                        if [[ "$file" == src/main/java/* ]]; then
+                          echo "merge conflict in $file under src/main/java, aborting rebase for branch $branch."
+                          conflict=true
+                          break
+                        fi
+                      done
+
+                      if $conflict; then
+                        git rebase --abort
+                        conflict_branches="$conflict_branches $branch"
+                      else
+                        echo "No conflicts in src/main/java. Resolving other conflicts."
+                        for file in $(git diff --name-only --diff-filter=U); do
+                          echo "Using our version for $file"
+                          git checkout --ours -- "$file"
+                        done
+                        git add .
+                        git rebase --continue || break
+                      fi
+                    fi
+                  done
+
+                  echo "conflict_branches=$conflict_branches" >> $GITHUB_ENV
+
+            - name: report conflicts
+              run: |
+                  if [ -n "$conflict_branches" ]; then
+                    echo "rebase was aborted due to conflicts in src/main/java for the following branches:"
+                    echo "$conflict_branches"
+                  else
+                    echo "all branches rebased successfully."
+                  fi
