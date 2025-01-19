@@ -17,8 +17,7 @@ jobs:
 
             - name: get all branches
               run: |
-                  branches=$(git branch -r | grep -v HEAD | sed 's@origin/@@')
-                  echo "branches=$branches" >> $GITHUB_ENV
+                  echo "BRANCHES=$(git branch -r | grep -v HEAD | sed 's@origin/@@' | tr '\n' ' ')" >> $GITHUB_ENV
 
             - name: rebase each branch
               run: |
