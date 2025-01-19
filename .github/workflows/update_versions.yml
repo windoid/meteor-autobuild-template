@@ -1,4 +1,4 @@
-name: update_versions.yml
+name: Backport Versions
 
 on:
     workflow_dispatch: # Allows manual triggering
@@ -56,6 +56,10 @@ jobs:
                         git rebase --continue || break
                       fi
                     fi
+
+                    echo "pushing changes for $branch"
+                    git push origin $branch --force-with-lease || echo "failed to push $branch"
+
                   done
 
                   echo "conflict_branches=$conflict_branches" >> $GITHUB_ENV
