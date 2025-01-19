@@ -20,7 +20,7 @@ public class AddonTemplate extends MeteorAddon {
 
     @Override
     public void onInitialize() {
-        LOG.info("Initializing Meteor Addon Template");
+        LOG.info("Initializing Addon Template");
 
         // Modules
         Modules.get().add(new ModuleExample());
