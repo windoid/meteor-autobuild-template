@@ -17,14 +17,11 @@ jobs:
 
             - name: get all branches
               run: |
-                  echo "BRANCHES=$(git branch -r | grep -v HEAD | sed 's@origin/@@' | tr '\n' ' ')" >> $GITHUB_ENV
+                  echo "branches=$(git branch -r | grep -v HEAD | sed 's@origin/@@' | tr '\n' ' ')" >> $GITHUB_ENV
 
             - name: rebase each branch
               run: |
-                  default_branch=$GITHUB_ENV
-                  branches=$GITHUB_ENV
                   conflict_branches=""
-
                   for branch in $branches; do
                     echo "Rebasing $branch onto $default_branch"
                     git checkout $branch
