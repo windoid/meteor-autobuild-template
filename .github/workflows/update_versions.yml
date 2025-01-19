@@ -49,7 +49,7 @@ jobs:
                       else
                         echo "No conflicts in src/main/java. Resolving other conflicts."
                         for file in $(git diff --name-only --diff-filter=U); do
-                          echo "Using our version for $file"
+                          echo "using our version for $file"
                           git checkout --ours -- "$file"
                         done
                         git add .

@@ -2,6 +2,10 @@ name: Publish Development Build
 on:
     push:
     workflow_dispatch:
+    workflow_run:
+        workflows: ["Backport Versions"]
+        types:
+            - completed
 
 
 jobs:
