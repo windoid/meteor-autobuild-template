@@ -13,18 +13,15 @@ jobs:
                   fetch-depth: 0
 
             - name: get default branch
-              run: echo "default_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')" >> $GITHUB_ENV
+              run: echo "default_branch=${{ github.event.repository.default_branch }}" >> $GITHUB_ENV
 
             - name: get all branches
               run: |
-                  echo "BRANCHES=$(git branch -r | grep -v HEAD | sed 's@origin/@@' | tr '\n' ' ')" >> $GITHUB_ENV
+                  echo "branches=$(git branch -r | grep -v HEAD | sed 's@origin/@@' | tr '\n' ' ')" >> $GITHUB_ENV
 
             - name: rebase each branch
               run: |
-                  default_branch=$GITHUB_ENV
-                  branches=$GITHUB_ENV
                   conflict_branches=""
-
                   for branch in $branches; do
                     echo "Rebasing $branch onto $default_branch"
                     git checkout $branch
